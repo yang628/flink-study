@@ -18,6 +18,7 @@ object StreamWordCount {
     // 创建流处理的执行环境
     val env = StreamExecutionEnvironment.getExecutionEnvironment
 //    env.setParallelism(8)
+//    env.disableOperatorChaining()
 
     // 从外部命令中提取参数，作为socket主机名和端口号
     val paramTool: ParameterTool = ParameterTool.fromArgs(args)
