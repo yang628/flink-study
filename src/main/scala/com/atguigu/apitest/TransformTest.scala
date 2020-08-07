@@ -1,6 +1,7 @@
 package com.atguigu.apitest
 
-import org.apache.flink.api.common.functions.ReduceFunction
+import org.apache.flink.api.common.functions.{FilterFunction, MapFunction, ReduceFunction, RichMapFunction}
+import org.apache.flink.configuration.Configuration
 import org.apache.flink.streaming.api.scala._
 
 /**
@@ -26,6 +27,8 @@ object TransformTest {
         val arr = data.split(",")
         SensorReading(arr(0), arr(1).toLong, arr(2).toDouble)
       } )
+//      .filter(new MyFilter)
+
     // 2.分组聚合，输出每个传感器当前最小值
     val aggStream = dataStream
       .keyBy("id")    // 根据id进行分组
@@ -78,4 +81,28 @@ object TransformTest {
 class MyReduceFunction extends ReduceFunction[SensorReading]{
   override def reduce(value1: SensorReading, value2: SensorReading): SensorReading =
     SensorReading(value1.id, value2.timestamp, value1.temperature.min(value2.temperature))
+}
+
+// 自定义一个函数类
+class MyFilter extends FilterFunction[SensorReading]{
+  override def filter(value: SensorReading): Boolean =
+    value.id.startsWith("sensor_1")
+}
+class MyMapper extends MapFunction[SensorReading, String]{
+  override def map(value: SensorReading): String = value.id + " temperature"
+}
+
+// 富函数，可以获取到运行时上下文，还有一些生命周期
+class MyRichMapper extends RichMapFunction[SensorReading, String]{
+
+  override def open(parameters: Configuration): Unit = {
+    // 做一些初始化操作，比如数据库的连接
+//    getRuntimeContext
+  }
+
+  override def map(value: SensorReading): String = value.id + " temperature"
+
+  override def close(): Unit = {
+    //  一般做收尾工作，比如关闭连接，或者清空状态
+  }
 }
