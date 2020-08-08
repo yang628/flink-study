@@ -39,7 +39,18 @@ object StateTest {
     // 需求：对于温度传感器温度值跳变，超过10度，报警
      val alertStream = dataStream
       .keyBy(_.id)
-      .flatMap( new TempChangeAlert(10.0) )
+//      .flatMap( new TempChangeAlert(10.0) )
+      .flatMapWithState[(String, Double, Double), Double] {
+         case (data: SensorReading, None) => ( List.empty, Some(data.temperature) )
+         case (data: SensorReading, lastTemp: Some[Double]) => {
+           // 跟最新的温度值求差值作比较
+           val diff = (data.temperature - lastTemp.get).abs
+           if( diff > 10.0 )
+             ( List((data.id, lastTemp.get, data.temperature)), Some(data.temperature) )
+           else
+             ( List.empty, Some(data.temperature) )
+         }
+     }
 
     alertStream.print()
 
@@ -61,7 +72,7 @@ class TempChangeAlert(threshold: Double) extends RichFlatMapFunction[SensorReadi
       out.collect( (value.id, lastTemp, value.temperature) )
 
     // 更新状态
-     lastTempState.update(value.temperature)
+    lastTempState.update(value.temperature)
   }
 }
 
