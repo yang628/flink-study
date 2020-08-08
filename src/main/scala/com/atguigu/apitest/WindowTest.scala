@@ -36,10 +36,11 @@ object WindowTest {
         SensorReading(arr(0), arr(1).toLong, arr(2).toDouble)
       } )
 //      .assignAscendingTimestamps(_.timestamp * 1000L)    // 升序数据提取时间戳
-      .assignTimestampsAndWatermarks(new BoundedOutOfOrdernessTimestampExtractor[SensorReading](Time.milliseconds(30)) {
+      .assignTimestampsAndWatermarks(new BoundedOutOfOrdernessTimestampExtractor[SensorReading](Time.seconds(3)) {
       override def extractTimestamp(element: SensorReading): Long = element.timestamp * 1000L
     })
 
+    val latetag = new OutputTag[(String, Double, Long)]("late")
     // 每15秒统计一次，窗口内各传感器所有温度的最小值，以及最新的时间戳
     val resultStream = dataStream
       .map( data => (data.id, data.temperature, data.timestamp) )
@@ -50,11 +51,12 @@ object WindowTest {
       //      .countWindow(10)    // 滚动计数窗口
       .timeWindow(Time.seconds(15))
         .allowedLateness(Time.minutes(1))
-        .sideOutputLateData(new OutputTag[(String, Double, Long)]("late"))
+        .sideOutputLateData(latetag)
 //      .minBy(1)
       .reduce( (curRes, newData) => (curRes._1, curRes._2.min(newData._2), newData._3) )
 
-    resultStream.print()
+    resultStream.getSideOutput(latetag).print("late")
+    resultStream.print("result")
 
     env.execute("window test")
 
