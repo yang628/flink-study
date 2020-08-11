@@ -32,6 +32,7 @@ object FileOutputTest {
         .field("id", DataTypes.STRING())
         .field("timestamp", DataTypes.BIGINT())
         .field("temp", DataTypes.DOUBLE())
+//        .field("pt", DataTypes.TIMESTAMP(3)).proctime()
       )
       .createTemporaryTable("inputTable")
 
