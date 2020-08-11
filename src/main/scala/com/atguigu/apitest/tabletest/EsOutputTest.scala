@@ -3,8 +3,7 @@ package com.atguigu.apitest.tabletest
 import org.apache.flink.streaming.api.scala._
 import org.apache.flink.table.api.DataTypes
 import org.apache.flink.table.api.scala._
-import org.apache.flink.table.descriptors.{Csv, FileSystem, Schema}
-import org.apache.flink.types.Row
+import org.apache.flink.table.descriptors._
 
 /**
   * Copyright (c) 2018-2028 尚硅谷 All Rights Reserved 
@@ -13,9 +12,9 @@ import org.apache.flink.types.Row
   * Package: com.atguigu.apitest.tabletest
   * Version: 1.0
   *
-  * Created by wushengran on 2020/8/10 16:30
+  * Created by wushengran on 2020/8/11 9:27
   */
-object FileOutputTest {
+object EsOutputTest {
   def main(args: Array[String]): Unit = {
     // 1. 创建环境
     val env = StreamExecutionEnvironment.getExecutionEnvironment
@@ -44,27 +43,27 @@ object FileOutputTest {
 
     // 3.2 聚合转换
     val aggTable = sensorTable
-      .groupBy('id)    // 基于id分组
+      .groupBy('id) // 基于id分组
       .select('id, 'id.count as 'count)
 
-    // 4. 输出到文件
-    // 注册输出表
-    val outputPath = "D:\\Projects\\BigData\\FlinkTutorial\\src\\main\\resources\\output.txt"
-
-    tableEnv.connect(new FileSystem().path(outputPath))
-      .withFormat(new Csv())
+    // 4. 输出到es
+    tableEnv.connect(new Elasticsearch()
+      .version("6")
+      .host("localhost", 9200, "http")
+      .index("sensor")
+      .documentType("temperature")
+    )
+      .inUpsertMode()
+      .withFormat(new Json())
       .withSchema(new Schema()
         .field("id", DataTypes.STRING())
-        .field("temperature", DataTypes.DOUBLE())
-//        .field("cnt", DataTypes.BIGINT())
+        .field("count", DataTypes.BIGINT())
       )
-      .createTemporaryTable("outputTable")
+      .createTemporaryTable("esOutputTable")
 
-    resultTable.insertInto("outputTable")
+    aggTable.insertInto("esOutputTable")
 
-    resultTable.toAppendStream[(String, Double)].print("result")
-    aggTable.toRetractStream[Row].print("agg")
+    env.execute("es output test")
 
-    env.execute()
   }
 }
