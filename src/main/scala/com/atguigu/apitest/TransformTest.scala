@@ -18,7 +18,7 @@ object TransformTest {
     val env = StreamExecutionEnvironment.getExecutionEnvironment
     env.setParallelism(1)
     // 0.读取数据
-    val inputPath = "D:\\Projects\\BigData\\FlinkTutorial\\src\\main\\resources\\sensor.txt"
+    val inputPath = "/Users/yanggaoji/IdeaProjects/Flink/src/main/resources/sensor.txt"
     val inputStream = env.readTextFile(inputPath)
 
     // 1.先转换成样例类类型（简单转换操作）

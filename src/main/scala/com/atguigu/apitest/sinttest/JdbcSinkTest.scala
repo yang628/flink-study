@@ -21,7 +21,7 @@ object JdbcSinkTest {
     val env = StreamExecutionEnvironment.getExecutionEnvironment
     env.setParallelism(1)
     // 读取数据
-    val inputPath = "D:\\Projects\\BigData\\FlinkTutorial\\src\\main\\resources\\sensor.txt"
+    val inputPath = "/Users/yanggaoji/IdeaProjects/Flink/src/main/resources/sensor.txt"
     val inputStream = env.readTextFile(inputPath)
 
     val stream = env.addSource( new MySensorSource() )

@@ -24,7 +24,7 @@ object FileOutputTest {
     val tableEnv = StreamTableEnvironment.create(env)
 
     // 2. 连接外部系统，读取数据，注册表
-    val filePath = "D:\\Projects\\BigData\\FlinkTutorial\\src\\main\\resources\\sensor.txt"
+    val filePath = "/Users/yanggaoji/IdeaProjects/Flink/src/main/resources/sensor.txt"
 
     tableEnv.connect(new FileSystem().path(filePath))
       .withFormat(new Csv())
@@ -50,7 +50,7 @@ object FileOutputTest {
 
     // 4. 输出到文件
     // 注册输出表
-    val outputPath = "D:\\Projects\\BigData\\FlinkTutorial\\src\\main\\resources\\output.txt"
+    val outputPath = "/Users/yanggaoji/IdeaProjects/Flink/src/main/resources/output.txt"
 
     tableEnv.connect(new FileSystem().path(outputPath))
       .withFormat(new Csv())

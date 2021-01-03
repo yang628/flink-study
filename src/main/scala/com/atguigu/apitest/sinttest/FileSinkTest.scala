@@ -20,7 +20,7 @@ object FileSinkTest {
     val env = StreamExecutionEnvironment.getExecutionEnvironment
     env.setParallelism(1)
     // 读取数据
-    val inputPath = "D:\\Projects\\BigData\\FlinkTutorial\\src\\main\\resources\\sensor.txt"
+    val inputPath = "/Users/yanggaoji/IdeaProjects/Flink/src/main/resources/sensor.txt"
     val inputStream = env.readTextFile(inputPath)
 
     // 先转换成样例类类型（简单转换操作）
@@ -31,7 +31,7 @@ object FileSinkTest {
       } )
 
     dataStream.print()
-//    dataStream.writeAsCsv("D:\\Projects\\BigData\\FlinkTutorial\\src\\main\\resources\\out.txt")
+//    dataStream.writeAsCsv("/Users/yanggaoji/IdeaProjects/Flink/src/main/resources/out.txt")
     dataStream.addSink(
       StreamingFileSink.forRowFormat(
         new Path("D:\\Projects\\BigData\\\\FlinkTutorial\\src\\main\\resources\\out1.txt"),

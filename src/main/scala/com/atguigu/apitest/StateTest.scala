@@ -48,7 +48,7 @@ object StateTest {
     env.setRestartStrategy(RestartStrategies.failureRateRestart(5, Time.minutes(5), Time.seconds(10)))
 
     // 读取数据
-    //    val inputPath = "D:\\Projects\\BigData\\FlinkTutorial\\src\\main\\resources\\sensor.txt"
+    //    val inputPath = "/Users/yanggaoji/IdeaProjects/Flink/src/main/resources/sensor.txt"
     //    val inputStream = env.readTextFile(inputPath)
 
     val inputStream = env.socketTextStream("localhost", 7777)
