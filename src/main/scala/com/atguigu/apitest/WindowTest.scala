@@ -20,14 +20,17 @@ object WindowTest {
   def main(args: Array[String]): Unit = {
     val env = StreamExecutionEnvironment.getExecutionEnvironment
     env.setParallelism(1)
-    env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
-    env.getConfig.setAutoWatermarkInterval(50)
+//    env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
+//    env.getConfig.setAutoWatermarkInterval(50)
+
+//    Error:scalac: Scala compiler JARs not found (module 'FlinkTutorial'): /Applications/IntelliJ IDEA.app/Contents/bin/e:/data/.m2/org/scala-lang/scala-library/2.12.7/scala-library-2.12.7.jar, /Applications/IntelliJ IDEA.app/Contents/bin/e:/data/.m2/org/scala-lang/scala-compiler/2.12.7/scala-compiler-2.12.7.jar, /Applications/IntelliJ IDEA.app/Contents/bin/e:/data/.m2/org/scala-lang/scala-reflect/2.12.7/scala-reflect-2.12.7.jar
 
     // 读取数据
 //    val inputPath = "/Users/yanggaoji/IdeaProjects/Flink/src/main/resources/sensor.txt"
 //    val inputStream = env.readTextFile(inputPath)
 
-    val inputStream = env.socketTextStream("localhost", 7777)
+    // 先起端口，发送数据 nc -lk 7777
+    val inputStream = env.socketTextStream("127.0.0.1", 7777)
 
     // 先转换成样例类类型（简单转换操作）
     val dataStream = inputStream
@@ -40,7 +43,7 @@ object WindowTest {
       override def extractTimestamp(element: SensorReading): Long = element.timestamp * 1000L
     })
 
-    val latetag = new OutputTag[(String, Double, Long)]("late")
+//    val latetag = new OutputTag[(String, Double, Long)]("late")
     // 每15秒统计一次，窗口内各传感器所有温度的最小值，以及最新的时间戳
     val resultStream = dataStream
       .map( data => (data.id, data.temperature, data.timestamp) )
@@ -50,12 +53,16 @@ object WindowTest {
 //      .window( EventTimeSessionWindows.withGap(Time.seconds(10)) )    // 会话窗口
       //      .countWindow(10)    // 滚动计数窗口
       .timeWindow(Time.seconds(15))
-        .allowedLateness(Time.minutes(1))
-        .sideOutputLateData(latetag)
+//        .allowedLateness(Time.minutes(1))
+//        .sideOutputLateData(latetag)
 //      .minBy(1)
-      .reduce( (curRes, newData) => (curRes._1, curRes._2.min(newData._2), newData._3) )
+      .reduce( (curRes, newData) => {
+      println("==========" + System.currentTimeMillis())
+      (curRes._1, curRes._2.min(newData._2), newData._3)
+    }
+ )
 
-    resultStream.getSideOutput(latetag).print("late")
+//    resultStream.getSideOutput(latetag).print("late")
     resultStream.print("result")
 
     env.execute("window test")
